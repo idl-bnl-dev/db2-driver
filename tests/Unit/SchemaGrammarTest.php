@@ -1,8 +1,8 @@
 <?php
 
-use BWICompanies\DB2Driver\Schema\DB2Blueprint;
+use IDL\DB2Driver\Schema\DB2Blueprint;
 
-function schemaSql(string $table, Closure $callback, ?\BWICompanies\DB2Driver\DB2Connection $connection = null): array
+function schemaSql(string $table, Closure $callback, ?\IDL\DB2Driver\DB2Connection $connection = null): array
 {
     $connection ??= db2();
 

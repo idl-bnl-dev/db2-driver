@@ -1,6 +1,6 @@
 <?php
 
-use BWICompanies\DB2Driver\DB2Connector;
+use IDL\DB2Driver\DB2Connector;
 
 function db2Config(array $overrides = []): array
 {

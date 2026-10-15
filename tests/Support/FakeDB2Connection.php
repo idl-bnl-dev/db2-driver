@@ -1,8 +1,8 @@
 <?php
 
-namespace BWICompanies\DB2Driver\Tests\Support;
+namespace IDL\DB2Driver\Tests\Support;
 
-use BWICompanies\DB2Driver\DB2Connection;
+use IDL\DB2Driver\DB2Connection;
 use PDO;
 
 /**

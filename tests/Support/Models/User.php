@@ -1,6 +1,6 @@
 <?php
 
-namespace BWICompanies\DB2Driver\Tests\Support\Models;
+namespace IDL\DB2Driver\Tests\Support\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

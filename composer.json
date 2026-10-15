@@ -28,21 +28,23 @@
         "illuminate/database": "^13.0"
     },
     "require-dev": {
+        "ext-pdo": "*",
+        "larastan/larastan": "^3.13",
         "nunomaduro/collision": "^8.9",
         "orchestra/testbench": "^11.0",
         "pestphp/pest": "^4.4",
         "pestphp/pest-plugin-laravel": "^4.1",
-        "phpunit/phpunit": "^12.5.12",
-        "ext-pdo": "*"
+        "phpstan/extension-installer": "^1.4",
+        "phpunit/phpunit": "^12.5.12"
     },
     "autoload": {
         "psr-4": {
-            "BWICompanies\\DB2Driver\\": "src"
+            "IDL\\DB2Driver\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "BWICompanies\\DB2Driver\\Tests\\": "tests"
+            "IDL\\DB2Driver\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -62,8 +64,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "BWICompanies\\DB2Driver\\DB2DriverServiceProvider",
-                "BWICompanies\\DB2Driver\\DB2ServiceProvider"
+                "IDL\\DB2Driver\\DB2DriverServiceProvider",
+                "IDL\\DB2Driver\\DB2ServiceProvider"
             ]
         }
     },

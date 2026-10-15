@@ -1,12 +1,16 @@
 <?php
 
-namespace BWICompanies\DB2Driver;
+namespace IDL\DB2Driver;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
 
 class DB2Processor extends Processor
 {
+    /**
+     * @param  string|list<string>|null  $sequence
+     * @return int|string|list<mixed>
+     */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)
     {
         $sequenceStr = $sequence ?: 'id';

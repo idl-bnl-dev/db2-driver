@@ -1,6 +1,6 @@
 <?php
 
-namespace BWICompanies\DB2Driver\Schema;
+namespace IDL\DB2Driver\Schema;
 
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
@@ -156,7 +156,7 @@ class DB2SchemaGrammar extends Grammar
      *
      * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
      * @param  \Illuminate\Support\Fluent  $command
-     * @return string
+     * @return list<string>
      */
     public function compileAdd(Blueprint $blueprint, Fluent $command)
     {
@@ -814,7 +814,7 @@ class DB2SchemaGrammar extends Grammar
     /**
      * Compile an addReplyListEntry command.
      *
-     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \IDL\DB2Driver\Schema\DB2Blueprint  $blueprint
      * @param  \Illuminate\Support\Fluent  $command
      * @return string
      */
@@ -846,7 +846,7 @@ EOT;
     /**
      * Compile a removeReplyListEntry command.
      *
-     * @param  \Illuminate\Database\Schema\Blueprint  $blueprint
+     * @param  \IDL\DB2Driver\Schema\DB2Blueprint  $blueprint
      * @param  \Illuminate\Support\Fluent  $command
      * @return string
      */

@@ -1,0 +1,21 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+    tmpDir: build/phpstan
+    ignoreErrors:
+        # Laravel passes schema commands/columns around as Fluent and reads attributes through __get.
+        -
+            identifier: property.notFound
+            message: '#^Access to an undefined property Illuminate\\Support\\Fluent::\$\w+\.$#'
+            path: src/Schema
+        # Laravel documents Builder::$resolver as a non-nullable Closure, but it is null until a resolver is set.
+        -
+            identifier: isset.property
+            path: src/Schema/DB2Builder.php
+        -
+            identifier: deadCode.unreachable
+            path: src/Schema/DB2Builder.php
