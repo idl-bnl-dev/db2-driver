@@ -35,10 +35,24 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y unixodbc unixodbc-dev curl gpg
-          curl -fsSL https://public.dhe.ibm.com/software/ibmi/products/odbc/debs/dists/1.1.0/ibmi-acs-1.1.0.list \
+          curl -fsSL --retry 5 --retry-all-errors https://public.dhe.ibm.com/software/ibmi/products/odbc/debs/dists/1.1.0/ibmi-acs-1.1.0.list \
             | sudo tee /etc/apt/sources.list.d/ibmi-acs-1.1.0.list
-          sudo apt-get update
-          sudo apt-get install -y ibm-iaccess
+
+          # IBM's server is occasionally unreachable from hosted runners, and apt
+          # then silently skips the repo. Retry until the package is installable.
+          for attempt in 1 2 3 4 5; do
+            sudo apt-get update -o Acquire::Retries=5 || true
+            if sudo apt-get install -y -o Acquire::Retries=5 ibm-iaccess; then
+              break
+            fi
+            if [ "$attempt" = 5 ]; then
+              echo "::error::Could not install ibm-iaccess from IBM's repository after 5 attempts"
+              exit 1
+            fi
+            echo "Attempt $attempt failed, retrying in $((attempt * 15))s..."
+            sleep $((attempt * 15))
+          done
+
           odbcinst -q -d
 
       - name: Set up PHP
