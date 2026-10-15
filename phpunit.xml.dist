@@ -3,6 +3,10 @@
   <testsuites>
     <testsuite name="DB2 Driver Test Suite">
       <directory>tests</directory>
+      <exclude>tests/Live</exclude>
+    </testsuite>
+    <testsuite name="Live">
+      <directory suffix="Test.php">tests/Live</directory>
     </testsuite>
   </testsuites>
   <logging>

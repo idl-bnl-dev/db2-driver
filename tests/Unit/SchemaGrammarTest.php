@@ -155,3 +155,18 @@ it('switches schema while building a schema-qualified table', function () {
     expect($schemaCalls[0])->toBe(['MYLIB'])
         ->and(end($schemaCalls))->toBe(['TESTLIB']);
 });
+
+it('lists columns using the default schema, not the database name', function () {
+    $connection = db2(['prefix' => 'p_']);
+    $connection->selectResults = [[(object) ['column_name' => 'ID'], (object) ['column_name' => 'NAME']]];
+
+    expect($connection->getSchemaBuilder()->getColumnListing('users'))->toBe(['ID', 'NAME'])
+        ->and($connection->selects[0]['bindings'])->toBe(['TESTLIB', 'p_users']);
+});
+
+it('lists columns for a schema-qualified table', function () {
+    $connection = db2(['prefix' => 'p_']);
+    $connection->getSchemaBuilder()->getColumnListing('otherlib.users');
+
+    expect($connection->selects[0]['bindings'])->toBe(['otherlib', 'p_users']);
+});

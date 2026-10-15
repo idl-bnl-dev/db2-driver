@@ -1,0 +1,62 @@
+name: Live DB2 Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two live suites at once against the shared database.
+concurrency:
+  group: live-db2
+  cancel-in-progress: false
+
+jobs:
+  live:
+    name: Live DB2 (PHP 8.5)
+    runs-on: ubuntu-latest
+    # Secrets are not exposed to PRs from forks, so skip those.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # IBM's apt repository is unsigned and apt's HTTP client stalls on it from hosted
+      # runners (apt-get update hangs for minutes, then ignores the repo). curl reaches the
+      # same server fine, so download one pinned .deb directly and verify its checksum.
+      - name: Install IBM i Access ODBC driver
+        env:
+          IACCESS_VERSION: 1.1.0.29-1.0
+          IACCESS_SHA256: e60e968d2cee96b2851964456f5b31ab990b1aa47d8f2399607809f7d4514f58
+        run: |
+          curl -fsSL --retry 5 --retry-all-errors --connect-timeout 30 --max-time 300 \
+            -o ibm-iaccess.deb \
+            "https://public.dhe.ibm.com/software/ibmi/products/odbc/debs/dists/1.1.0/main/binary-amd64/ibm-iaccess-${IACCESS_VERSION}.amd64.deb"
+          echo "${IACCESS_SHA256}  ibm-iaccess.deb" | sha256sum -c -
+
+          sudo apt-get update
+          sudo apt-get install -y unixodbc unixodbc-dev ./ibm-iaccess.deb
+          odbcinst -q -d
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo, pdo_odbc
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run live tests
+        run: composer test-live
