@@ -50,7 +50,8 @@
     "scripts": {
         "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
         "analyse": "vendor/bin/phpstan analyse",
-        "test": "vendor/bin/pest",
+        "test": "vendor/bin/pest --testsuite=\"DB2 Driver Test Suite\"",
+        "test-live": "vendor/bin/pest --testsuite=Live",
         "test-coverage": "vendor/bin/pest --coverage --coverage-html=build/coverage --coverage-text=build/coverage.txt --coverage-clover=build/logs/clover.xml",
         "format": "vendor/bin/pint"
     },

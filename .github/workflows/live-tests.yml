@@ -1,0 +1,55 @@
+name: Live DB2 Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two live suites at once against the shared database.
+concurrency:
+  group: live-db2
+  cancel-in-progress: false
+
+jobs:
+  live:
+    name: Live DB2 (PHP 8.3)
+    runs-on: ubuntu-latest
+    # Secrets are not exposed to PRs from forks, so skip those.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_DATABASE: ${{ secrets.DB_DATABASE }}
+      DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install IBM i Access ODBC driver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unixodbc unixodbc-dev curl gpg
+          curl -fsSL https://public.dhe.ibm.com/software/ibmi/products/odbc/debs/dists/1.1.0/ibmi-acs-1.1.0.list \
+            | sudo tee /etc/apt/sources.list.d/ibmi-acs-1.1.0.list
+          sudo apt-get update
+          sudo apt-get install -y ibm-iaccess
+          odbcinst -q -d
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_odbc
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run live tests
+        run: composer test-live

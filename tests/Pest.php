@@ -1,9 +1,11 @@
 <?php
 
+use IDL\DB2Driver\Tests\Live\LiveTestCase;
 use IDL\DB2Driver\Tests\Support\FakeDB2Connection;
 use IDL\DB2Driver\Tests\TestCase;
 
-uses(TestCase::class)->in(__DIR__);
+uses(TestCase::class)->in('Unit', 'Feature');
+uses(LiveTestCase::class)->in('Live');
 
 /**
  * Build a DB2 connection that never touches a real database.
