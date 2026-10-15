@@ -107,6 +107,21 @@ Add a new connection in `database.php`:
 
 > Note: Be sure to define the appropriate keys in `.env`.
 
+### Read-only mode
+Publish the package config:
+
+```bash
+php artisan vendor:publish --tag=db2-driver-config
+```
+
+Then set `DB2_READONLY=true` (or `'readonly' => true` in `config/db2-driver.php`) to block all writes. Inserts, updates/merges, deletes and schema
+changes (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`) throw `IDL\DB2Driver\Exceptions\ReadOnlyModeException`
+before reaching the database. Selects are unaffected.
+
+Set `DB2_READONLY_ALLOW_UPDATES=true` as well to permit `UPDATE`/`MERGE` statements while everything else stays blocked.
+
+These are defaults for every `db2` connection; `readonly` and `readonly_allow_updates` keys on a connection in `config/database.php` override them.
+
 ## Other Resources
 - [DB2 Connection String Keywords](https://www.ibm.com/docs/fr/i/7.3?topic=details-connection-string-keywords)
 - [PDO Attributes](https://www.w3resource.com/php/pdo/php-pdo.php)
