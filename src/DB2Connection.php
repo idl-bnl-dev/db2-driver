@@ -66,10 +66,6 @@ class DB2Connection extends Connection
      */
     public function getSchemaBuilder()
     {
-        if (is_null($this->schemaGrammar)) {
-            $this->useDefaultSchemaGrammar();
-        }
-
         return new DB2Builder($this);
     }
 
@@ -99,6 +95,19 @@ class DB2Connection extends Connection
     protected function getDefaultSchemaGrammar(): \Illuminate\Database\Grammar
     {
         return new DB2SchemaGrammar($this);
+    }
+
+    /**
+     * @var DB2Processor
+     */
+    protected $postProcessor;
+
+    /**
+     * Get the query post processor used by the connection.
+     */
+    public function getPostProcessor(): DB2Processor
+    {
+        return $this->postProcessor;
     }
 
     /**

@@ -38,7 +38,7 @@ class DB2Blueprint extends Blueprint
      */
     public function setReplyListSequenceNumber(int $replyListSequenceNumber)
     {
-        return $this->replyListSequenceNumber = $replyListSequenceNumber;
+        $this->replyListSequenceNumber = $replyListSequenceNumber;
     }
 
     /**
@@ -92,7 +92,7 @@ class DB2Blueprint extends Blueprint
      *
      * @param  string  $type
      * @param  string|array  $columns
-     * @param  string  $index
+     * @param  string|null  $index
      * @param  string|null  $algorithm
      * @param  string|null  $operatorClass
      * @return \Illuminate\Support\Fluent
@@ -130,7 +130,7 @@ class DB2Blueprint extends Blueprint
      * Create a new boolean column on the table.
      *
      * @param  string  $column
-     * @return \Illuminate\Support\Fluent
+     * @return \Illuminate\Database\Schema\ColumnDefinition
      */
     public function boolean($column)
     {

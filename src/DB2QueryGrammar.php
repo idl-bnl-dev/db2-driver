@@ -10,7 +10,7 @@ class DB2QueryGrammar extends Grammar
     /**
      * The format for database stored dates.
      *
-     * @var string
+     * @var string|null
      */
     protected $dateFormat;
 
@@ -113,7 +113,7 @@ class DB2QueryGrammar extends Grammar
 
         // if there are bindings in the order, we need to move them to the select since we are moving the parameter
         // markers there with the OVER statement
-        if (isset($query->getRawBindings()['order'])) {
+        if ($query->getRawBindings()['order'] !== []) {
             $query->addBinding($query->getRawBindings()['order'], 'select');
             $query->setBindings([], 'order');
         }
