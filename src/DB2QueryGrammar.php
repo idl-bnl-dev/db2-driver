@@ -106,7 +106,7 @@ class DB2QueryGrammar extends Grammar
         $columns = (! empty($components['columns']) ? $components['columns'].', ' : 'select');
 
         if ($columns == 'select *, ' && $query->from) {
-            $columns = 'select '.$this->tablePrefix.$query->from.'.*, ';
+            $columns = 'select '.$this->connection->getTablePrefix().$query->from.'.*, ';
         }
 
         $components['columns'] = $this->compileOver($orderings, $columns);

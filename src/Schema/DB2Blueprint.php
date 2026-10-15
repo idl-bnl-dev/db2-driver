@@ -2,9 +2,7 @@
 
 namespace BWICompanies\DB2Driver\Schema;
 
-use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\Grammars\Grammar;
 
 class DB2Blueprint extends Blueprint
 {
@@ -14,6 +12,13 @@ class DB2Blueprint extends Blueprint
      * @var int
      */
     private $replyListSequenceNumber;
+
+    /**
+     * The system name (short name) of the table.
+     *
+     * @var string|null
+     */
+    public $systemName;
 
     /**
      * Get the sequence number of reply list entries.
@@ -39,24 +44,21 @@ class DB2Blueprint extends Blueprint
     /**
      * Get the raw SQL statements for the blueprint.
      *
-     * @param  \Illuminate\Database\Connection  $connection
-     * @param  \Illuminate\Database\Schema\Grammars\Grammar  $grammar
      * @return array
      */
-    public function toSql(Connection $connection, Grammar $grammar)
+    public function toSql()
     {
-        $this->addReplyListEntryCommands($connection);
+        $this->addReplyListEntryCommands();
 
-        return parent::toSql($connection, $grammar);
+        return parent::toSql();
     }
 
     /**
      * Add the commands that are necessary to DROP and Rename statements on IBMi.
      *
-     * @param  \Illuminate\Database\Connection  $connection
      * @return void
      */
-    protected function addReplyListEntryCommands(Connection $connection)
+    protected function addReplyListEntryCommands()
     {
         if ($this->commandsNamed(['dropColumn', 'renameColumn'])->count() > 0) {
             array_unshift($this->commands, $this->createCommand('addReplyListEntry'), $this->createCommand('changeJob'));
@@ -91,9 +93,11 @@ class DB2Blueprint extends Blueprint
      * @param  string  $type
      * @param  string|array  $columns
      * @param  string  $index
+     * @param  string|null  $algorithm
+     * @param  string|null  $operatorClass
      * @return \Illuminate\Support\Fluent
      */
-    protected function indexCommand($type, $columns, $index, $algorithm = null)
+    protected function indexCommand($type, $columns, $index, $algorithm = null, $operatorClass = null)
     {
         $columns = (array) $columns;
 

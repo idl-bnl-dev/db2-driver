@@ -13,7 +13,6 @@ class DB2Builder extends Builder
      */
     public function hasTable($table): bool
     {
-        $sql = $this->grammar->compileTableExists();
         $schemaTable = explode('.', $table);
 
         if (count($schemaTable) > 1) {
@@ -24,10 +23,9 @@ class DB2Builder extends Builder
             $table = $this->connection->getTablePrefix().$table;
         }
 
-        return count($this->connection->select($sql, [
-            $schema,
-            $table,
-        ])) > 0;
+        return count($this->connection->select(
+            $this->grammar->compileTableExists($schema, $table)
+        )) > 0;
     }
 
     /**
@@ -70,19 +68,19 @@ class DB2Builder extends Builder
             $this->connection->setCurrentSchema($schemaTable[0]);
         }
 
-        $blueprint->build($this->connection, $this->grammar);
+        $blueprint->build();
         $this->connection->resetCurrentSchema();
     }
 
     /**
      * Create a new command set with a Closure.
      */
-    protected function createBlueprint($table, Closure $callback = null)
+    protected function createBlueprint($table, ?Closure $callback = null)
     {
         if (isset($this->resolver)) {
-            return call_user_func($this->resolver, $table, $callback);
+            return call_user_func($this->resolver, $this->connection, $table, $callback);
         }
 
-        return new DB2Blueprint($table, $callback);
+        return new DB2Blueprint($this->connection, $table, $callback);
     }
 }

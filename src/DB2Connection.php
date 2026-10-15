@@ -26,7 +26,7 @@ class DB2Connection extends Connection
         array $config = []
         ) {
         parent::__construct($pdo, $database, $tablePrefix, $config);
-        $this->currentSchema = $this->defaultSchema = strtoupper($config['schema'] ?? null);
+        $this->currentSchema = $this->defaultSchema = strtoupper($config['schema'] ?? '');
     }
 
     /**
@@ -78,7 +78,7 @@ class DB2Connection extends Connection
      */
     protected function getDefaultQueryGrammar()
     {
-        $defaultGrammar = new DB2QueryGrammar;
+        $defaultGrammar = new DB2QueryGrammar($this);
 
         // If a date format was specified in constructor
         if (array_key_exists('date_format', $this->config)) {
@@ -90,7 +90,7 @@ class DB2Connection extends Connection
             $defaultGrammar->setOffsetCompatibilityMode($this->config['offset_compatibility_mode']);
         }
 
-        return $this->withTablePrefix($defaultGrammar);
+        return $defaultGrammar;
     }
 
     /**
@@ -98,7 +98,7 @@ class DB2Connection extends Connection
      */
     protected function getDefaultSchemaGrammar(): \Illuminate\Database\Grammar
     {
-        return new DB2SchemaGrammar;
+        return new DB2SchemaGrammar($this);
     }
 
     /**
