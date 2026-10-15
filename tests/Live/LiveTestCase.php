@@ -19,7 +19,11 @@ abstract class LiveTestCase extends TestCase
 
     protected function setUp(): void
     {
-        Dotenv::createImmutable(dirname(__DIR__, 2))->safeLoad();
+        // CI provides the credentials as environment variables and has no .env file;
+        // loading a missing file would raise a warning (and failOnWarning is on).
+        if (is_file(dirname(__DIR__, 2).'/.env')) {
+            Dotenv::createImmutable(dirname(__DIR__, 2))->load();
+        }
 
         foreach (self::REQUIRED as $key) {
             if (($_ENV[$key] ?? getenv($key) ?: '') === '') {
