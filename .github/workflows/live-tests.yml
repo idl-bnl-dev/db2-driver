@@ -31,28 +31,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # IBM's apt repository is unsigned and apt's HTTP client stalls on it from hosted
+      # runners (apt-get update hangs for minutes, then ignores the repo). curl reaches the
+      # same server fine, so download one pinned .deb directly and verify its checksum.
       - name: Install IBM i Access ODBC driver
+        env:
+          IACCESS_VERSION: 1.1.0.29-1.0
+          IACCESS_SHA256: e60e968d2cee96b2851964456f5b31ab990b1aa47d8f2399607809f7d4514f58
         run: |
+          curl -fsSL --retry 5 --retry-all-errors --connect-timeout 30 --max-time 300 \
+            -o ibm-iaccess.deb \
+            "https://public.dhe.ibm.com/software/ibmi/products/odbc/debs/dists/1.1.0/main/binary-amd64/ibm-iaccess-${IACCESS_VERSION}.amd64.deb"
+          echo "${IACCESS_SHA256}  ibm-iaccess.deb" | sha256sum -c -
+
           sudo apt-get update
-          sudo apt-get install -y unixodbc unixodbc-dev curl gpg
-          curl -fsSL --retry 5 --retry-all-errors https://public.dhe.ibm.com/software/ibmi/products/odbc/debs/dists/1.1.0/ibmi-acs-1.1.0.list \
-            | sudo tee /etc/apt/sources.list.d/ibmi-acs-1.1.0.list
-
-          # IBM's server is occasionally unreachable from hosted runners, and apt
-          # then silently skips the repo. Retry until the package is installable.
-          for attempt in 1 2 3 4 5; do
-            sudo apt-get update -o Acquire::Retries=5 || true
-            if sudo apt-get install -y -o Acquire::Retries=5 ibm-iaccess; then
-              break
-            fi
-            if [ "$attempt" = 5 ]; then
-              echo "::error::Could not install ibm-iaccess from IBM's repository after 5 attempts"
-              exit 1
-            fi
-            echo "Attempt $attempt failed, retrying in $((attempt * 15))s..."
-            sleep $((attempt * 15))
-          done
-
+          sudo apt-get install -y unixodbc unixodbc-dev ./ibm-iaccess.deb
           odbcinst -q -d
 
       - name: Set up PHP
