@@ -1,7 +1,7 @@
 <?php
 
-use BWICompanies\DB2Driver\Tests\Support\FakeDB2Connection;
-use BWICompanies\DB2Driver\Tests\Support\Models\User;
+use IDL\DB2Driver\Tests\Support\FakeDB2Connection;
+use IDL\DB2Driver\Tests\Support\Models\User;
 use Illuminate\Database\ConnectionResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

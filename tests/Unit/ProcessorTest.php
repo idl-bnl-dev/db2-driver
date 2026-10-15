@@ -32,7 +32,7 @@ it('returns all values when the sequence is an array', function () {
     $connection = db2();
     $connection->selectResults = [[(object) ['a' => 1, 'b' => 2]]];
 
-    $ids = (new \BWICompanies\DB2Driver\DB2Processor)->processInsertGetId(
+    $ids = (new \IDL\DB2Driver\DB2Processor)->processInsertGetId(
         $connection->table('users'), 'insert into users (name) values (?)', ['x'], ['a', 'b']
     );
 

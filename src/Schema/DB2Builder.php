@@ -1,6 +1,6 @@
 <?php
 
-namespace BWICompanies\DB2Driver\Schema;
+namespace IDL\DB2Driver\Schema;
 
 use Closure;
 use Illuminate\Database\Schema\Blueprint;
@@ -9,12 +9,12 @@ use Illuminate\Database\Schema\Builder;
 class DB2Builder extends Builder
 {
     /**
-     * @var \BWICompanies\DB2Driver\DB2Connection
+     * @var \IDL\DB2Driver\DB2Connection
      */
     protected $connection;
 
     /**
-     * @var \BWICompanies\DB2Driver\Schema\DB2SchemaGrammar
+     * @var \IDL\DB2Driver\Schema\DB2SchemaGrammar
      */
     protected $grammar;
 

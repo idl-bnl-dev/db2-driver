@@ -1,6 +1,6 @@
 <?php
 
-namespace BWICompanies\DB2Driver\Schema;
+namespace IDL\DB2Driver\Schema;
 
 use Illuminate\Database\Schema\Blueprint;
 

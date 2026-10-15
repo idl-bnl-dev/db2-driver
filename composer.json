@@ -39,12 +39,12 @@
     },
     "autoload": {
         "psr-4": {
-            "BWICompanies\\DB2Driver\\": "src"
+            "IDL\\DB2Driver\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "BWICompanies\\DB2Driver\\Tests\\": "tests"
+            "IDL\\DB2Driver\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -64,8 +64,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "BWICompanies\\DB2Driver\\DB2DriverServiceProvider",
-                "BWICompanies\\DB2Driver\\DB2ServiceProvider"
+                "IDL\\DB2Driver\\DB2DriverServiceProvider",
+                "IDL\\DB2Driver\\DB2ServiceProvider"
             ]
         }
     },

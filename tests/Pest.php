@@ -1,7 +1,7 @@
 <?php
 
-use BWICompanies\DB2Driver\Tests\Support\FakeDB2Connection;
-use BWICompanies\DB2Driver\Tests\TestCase;
+use IDL\DB2Driver\Tests\Support\FakeDB2Connection;
+use IDL\DB2Driver\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
 

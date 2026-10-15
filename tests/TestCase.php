@@ -1,8 +1,8 @@
 <?php
 
-namespace BWICompanies\DB2Driver\Tests;
+namespace IDL\DB2Driver\Tests;
 
-use BWICompanies\DB2Driver\DB2DriverServiceProvider;
+use IDL\DB2Driver\DB2DriverServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -13,7 +13,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'BWICompanies\\DB2Driver\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'IDL\\DB2Driver\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 

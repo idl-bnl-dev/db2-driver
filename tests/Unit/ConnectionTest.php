@@ -39,15 +39,15 @@ it('runs system commands through QCMDEXC', function () {
 it('exposes the DB2 grammars and processor', function () {
     $connection = db2();
 
-    expect($connection->getQueryGrammar())->toBeInstanceOf(\BWICompanies\DB2Driver\DB2QueryGrammar::class)
-        ->and($connection->getPostProcessor())->toBeInstanceOf(\BWICompanies\DB2Driver\DB2Processor::class)
-        ->and($connection->getSchemaBuilder())->toBeInstanceOf(\BWICompanies\DB2Driver\Schema\DB2Builder::class)
+    expect($connection->getQueryGrammar())->toBeInstanceOf(\IDL\DB2Driver\DB2QueryGrammar::class)
+        ->and($connection->getPostProcessor())->toBeInstanceOf(\IDL\DB2Driver\DB2Processor::class)
+        ->and($connection->getSchemaBuilder())->toBeInstanceOf(\IDL\DB2Driver\Schema\DB2Builder::class)
         ->and($connection->getSchemaBuilder()->getConnection()->getSchemaGrammar())
-        ->toBeInstanceOf(\BWICompanies\DB2Driver\Schema\DB2SchemaGrammar::class);
+        ->toBeInstanceOf(\IDL\DB2Driver\Schema\DB2SchemaGrammar::class);
 });
 
 it('is resolved for the db2 driver', function () {
-    app()->register(\BWICompanies\DB2Driver\DB2ServiceProvider::class);
+    app()->register(\IDL\DB2Driver\DB2ServiceProvider::class);
 
     // Connection::resolverFor() is invoked lazily, so we only check registration here.
     expect(\Illuminate\Database\Connection::getResolver('db2'))->toBeCallable();
