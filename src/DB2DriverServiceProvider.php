@@ -10,6 +10,7 @@ class DB2DriverServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package->name('db2-driver')
+            ->hasConfigFile()
             ->publishesServiceProvider('DB2ServiceProvider');
     }
 }
