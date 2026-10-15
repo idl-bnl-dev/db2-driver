@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   live:
-    name: Live DB2 (PHP 8.3)
+    name: Live DB2 (PHP 8.5)
     runs-on: ubuntu-latest
     # Secrets are not exposed to PRs from forks, so skip those.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
@@ -58,7 +58,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           extensions: pdo, pdo_odbc
           coverage: none
 
