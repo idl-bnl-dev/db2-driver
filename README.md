@@ -1,7 +1,9 @@
-[<img src="https://banners.beyondco.de/db2-driver.png?theme=dark&packageManager=composer+require&packageName=bwicompanies%2Fdb2-driver&pattern=bankNote&style=style_1&description=DB2+for+IBM+iSeries+connectivity+for+Laravel&md=1&showWatermark=0&fontSize=100px&images=server&widths=auto"/>]()
+[<img src="https://banners.beyondco.de/db2-driver.png?theme=dark&packageManager=composer+require&packageName=idl-bnl-dev%2Fdb2-driver&pattern=bankNote&style=style_1&description=DB2+for+IBM+iSeries+connectivity+for+Laravel&md=1&showWatermark=0&fontSize=100px&images=server&widths=auto"/>]()
 
 # DB2 for IBM iSeries Laravel Driver
 This package allows you to use Laravel's query builder and eloquent with DB2 for IBM iSeries by extending the Illuminate Database component of the Laravel framework. Originally forked from [cooperl22/laravel-db2](https://github.com/cooperl22/laravel-db2).
+
+> **Private package:** This package is maintained internally by ID Logistics and is not published on Packagist. Access to the [GitHub repository](https://github.com/idl-bnl-dev/db2-driver) is required.
 
 ## Requirements
 - PHP PDO_ODBC extension
@@ -9,10 +11,23 @@ This package allows you to use Laravel's query builder and eloquent with DB2 for
 
 ## Installation
 
-Install the package via composer:
+Since the package is private, first register the GitHub repository as a VCS source in your project's `composer.json`:
+
+```json
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "git@github.com:idl-bnl-dev/db2-driver.git"
+    }
+]
+```
+
+> Note: Composer needs access to the repository, either through an SSH key or a GitHub token (`composer config --global github-oauth.github.com <token>`) with read access to `idl-bnl-dev/db2-driver`.
+
+Then install the package via composer:
 
 ```bash
-composer require bwicompanies/db2-driver
+composer require idl-bnl-dev/db2-driver
 ```
 
 Add a new connection in `database.php`:
@@ -99,4 +114,4 @@ Add a new connection in `database.php`:
 - [Seiden Group](https://www.seidengroup.com/blog/)
 
 ## License
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+This package is released under the MIT License. Please see [License File](LICENSE.md) for more information.
