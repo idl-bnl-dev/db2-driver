@@ -1,6 +1,9 @@
 [<img src="https://banners.beyondco.de/db2-driver.png?theme=dark&packageManager=composer+require&packageName=idl-bnl-dev%2Fdb2-driver&pattern=bankNote&style=style_1&description=DB2+for+IBM+iSeries+connectivity+for+Laravel&md=1&showWatermark=0&fontSize=100px&images=server&widths=auto"/>]()
 
 # DB2 for IBM iSeries Laravel Driver
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/idl-bnl-dev/db2-driver.svg)](https://packagist.org/packages/idl-bnl-dev/db2-driver)
+[![License](https://img.shields.io/packagist/l/idl-bnl-dev/db2-driver.svg)](LICENSE.md)
+
 This package allows you to use Laravel's query builder and eloquent with DB2 for IBM iSeries by extending the Illuminate Database component of the Laravel framework. Originally forked from [cooperl22/laravel-db2](https://github.com/cooperl22/laravel-db2).
 
 ## Requirements
@@ -11,18 +14,9 @@ This package allows you to use Laravel's query builder and eloquent with DB2 for
 
 ## Installation
 
-The package is open source and hosted on [GitHub](https://github.com/idl-bnl-dev/db2-driver). Register the repository as a VCS source in your project's `composer.json` (no credentials are needed):
+The package is open source and available on [Packagist](https://packagist.org/packages/idl-bnl-dev/db2-driver). No extra repository configuration is needed.
 
-```json
-"repositories": [
-    {
-        "type": "vcs",
-        "url": "https://github.com/idl-bnl-dev/db2-driver"
-    }
-]
-```
-
-Then install the package via composer:
+Install it via composer:
 
 ```bash
 composer require idl-bnl-dev/db2-driver
