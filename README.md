@@ -2,6 +2,7 @@
 
 # DB2 for IBM iSeries Laravel Driver
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/idl-bnl-dev/db2-driver.svg)](https://packagist.org/packages/idl-bnl-dev/db2-driver)
+[![Test Coverage](https://codecov.io/gh/idl-bnl-dev/db2-driver/branch/master/graph/badge.svg)](https://codecov.io/gh/idl-bnl-dev/db2-driver)
 [![License](https://img.shields.io/packagist/l/idl-bnl-dev/db2-driver.svg)](LICENSE.md)
 
 This package allows you to use Laravel's query builder and eloquent with DB2 for IBM iSeries by extending the Illuminate Database component of the Laravel framework. Originally forked from [cooperl22/laravel-db2](https://github.com/cooperl22/laravel-db2).
