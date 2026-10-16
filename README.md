@@ -1,34 +1,31 @@
 [<img src="https://banners.beyondco.de/db2-driver.png?theme=dark&packageManager=composer+require&packageName=idl-bnl-dev%2Fdb2-driver&pattern=bankNote&style=style_1&description=DB2+for+IBM+iSeries+connectivity+for+Laravel&md=1&showWatermark=0&fontSize=100px&images=server&widths=auto"/>]()
 
 # DB2 for IBM iSeries Laravel Driver
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/idl-bnl-dev/db2-driver.svg)](https://packagist.org/packages/idl-bnl-dev/db2-driver)
+[![Test Coverage](https://codecov.io/gh/idl-bnl-dev/db2-driver/branch/master/graph/badge.svg)](https://codecov.io/gh/idl-bnl-dev/db2-driver)
+[![License](https://img.shields.io/packagist/l/idl-bnl-dev/db2-driver.svg)](LICENSE.md)
+
 This package allows you to use Laravel's query builder and eloquent with DB2 for IBM iSeries by extending the Illuminate Database component of the Laravel framework. Originally forked from [cooperl22/laravel-db2](https://github.com/cooperl22/laravel-db2).
 
-> **Private package:** This package is maintained internally by ID Logistics and is not published on Packagist. Access to the [GitHub repository](https://github.com/idl-bnl-dev/db2-driver) is required.
-
 ## Requirements
+- PHP 8.3+
+- Laravel 13 (`illuminate/database` ^13.0)
 - PHP PDO_ODBC extension
 - IBM i Access ODBC Driver ([Windows & Linux](https://ibmi-oss-docs.readthedocs.io/en/latest/odbc/installation.html))
 
 ## Installation
 
-Since the package is private, first register the GitHub repository as a VCS source in your project's `composer.json`:
+The package is open source and available on [Packagist](https://packagist.org/packages/idl-bnl-dev/db2-driver). No extra repository configuration is needed.
 
-```json
-"repositories": [
-    {
-        "type": "vcs",
-        "url": "git@github.com:idl-bnl-dev/db2-driver.git"
-    }
-]
-```
-
-> Note: Composer needs access to the repository, either through an SSH key or a GitHub token (`composer config --global github-oauth.github.com <token>`) with read access to `idl-bnl-dev/db2-driver`.
-
-Then install the package via composer:
+Install it via composer:
 
 ```bash
 composer require idl-bnl-dev/db2-driver
 ```
+
+The service providers are registered automatically through Laravel's package discovery.
+
+## Configuration
 
 Add a new connection in `database.php`:
 > Note: You can specify the connection name, but the driver must be 'db2'
@@ -107,6 +104,63 @@ Add a new connection in `database.php`:
 
 > Note: Be sure to define the appropriate keys in `.env`.
 
+## Usage
+
+Once the connection is configured, use it like any other Laravel connection.
+
+### Query builder
+
+```php
+use Illuminate\Support\Facades\DB;
+
+$orders = DB::connection('myDB2Connection')
+    ->table('ORDERS')
+    ->where('STATUS', 'OPEN')
+    ->orderBy('ORDER_DATE', 'desc')
+    ->limit(50)
+    ->get();
+```
+
+### Eloquent
+
+Point a model at the DB2 connection:
+
+```php
+use Illuminate\Database\Eloquent\Model;
+
+class Order extends Model
+{
+    protected $connection = 'myDB2Connection';
+    protected $table = 'ORDERS';
+    protected $primaryKey = 'ORDER_ID';
+    public $timestamps = false;
+}
+
+$open = Order::where('STATUS', 'OPEN')->paginate(25);
+```
+
+Or make it the default by setting `DB_CONNECTION=myDB2Connection` in `.env`.
+
+### Schema builder
+
+```php
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+Schema::connection('myDB2Connection')->create('CUSTOMERS', function (Blueprint $table) {
+    $table->id();
+    $table->string('name');
+    $table->timestamps();
+
+    $table->forSystemName('CUSTOMR'); // IBM i system name (max 10 chars)
+    $table->label('Customers');       // table label
+});
+```
+
+### Pagination and offsets
+
+Older IBM i releases do not support `OFFSET` natively. With `'offset_compatibility_mode' => true` (the default) limits use `FETCH FIRST n ROWS ONLY` and offsets are emulated with a wrapped `ROW_NUMBER()` query, so `skip()`/`offset()` and `paginate()` work on those systems. Set it to `false` if your system supports `LIMIT`/`OFFSET` natively.
+
 ### Read-only mode
 Publish the package config:
 
@@ -121,6 +175,22 @@ before reaching the database. Selects are unaffected.
 Set `DB2_READONLY_ALLOW_UPDATES=true` as well to permit `UPDATE`/`MERGE` statements while everything else stays blocked.
 
 These are defaults for every `db2` connection; `readonly` and `readonly_allow_updates` keys on a connection in `config/database.php` override them.
+
+## Troubleshooting
+- **`could not find driver` / `Data source name not found`**: make sure `pdo_odbc` is enabled (`php -m | grep odbc`) and that `driverName` matches the name of the installed ODBC driver (see `odbcinst -q -d` on Linux).
+- **Wrong tables or libraries**: set `schema` (and `DefaultLibraries` / `Naming` in `odbc_keywords`) to control the library used to resolve unqualified table names.
+- **Garbled characters**: keep `CCSID` at `1208` (UTF-8) unless your system requires otherwise.
+
+## Testing
+```bash
+composer test        # unit and feature tests (no database required)
+composer test-live   # tests against a real DB2 instance (requires DB credentials in .env)
+composer analyse     # static analysis (PHPStan)
+composer format      # code style (Pint)
+```
+
+## Contributing
+Issues and pull requests are welcome on [GitHub](https://github.com/idl-bnl-dev/db2-driver). Please run the tests and static analysis before submitting a PR.
 
 ## Other Resources
 - [DB2 Connection String Keywords](https://www.ibm.com/docs/fr/i/7.3?topic=details-connection-string-keywords)
