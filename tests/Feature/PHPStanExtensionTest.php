@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Runs PHPStan over tests/Support/PHPStan/typed-model.php and asserts on what it reports,
+ * Runs PHPStan over a fixture in tests/Support/PHPStan and asserts on what it reports,
  * the way a consuming project would see the extension.
  *
  * @return array<int, string> messages by line number
  */
-function analyseAliasFixture(string $config): array
+function analyseAliasFixture(string $config, string $fixture = 'typed-model.php'): array
 {
     $root = dirname(__DIR__, 2);
     $output = shell_exec(sprintf(
@@ -18,8 +18,12 @@ function analyseAliasFixture(string $config): array
     $json = json_decode(substr((string) $output, (int) strpos((string) $output, '{')), true);
     $messages = [];
 
-    foreach (array_values($json['files'])[0]['messages'] ?? [] as $message) {
-        $messages[$message['line']][] = $message['message'];
+    foreach ($json['files'] as $path => $file) {
+        if (str_ends_with($path, $fixture)) {
+            foreach ($file['messages'] as $message) {
+                $messages[$message['line']][] = $message['message'];
+            }
+        }
     }
 
     return $messages;
@@ -59,5 +63,36 @@ describe('property extension', function () {
 
         expect($messages[24])->toBe(['Dumped type: float'])
             ->and(implode(' ', $messages[35]))->toContain('undefined property')->toContain('$orderedQuantity');
+    });
+});
+
+describe('alias rules (rules.neon)', function () {
+    beforeEach(function () {
+        static $messages = null;
+
+        $this->messages = $messages ??= analyseAliasFixture('phpstan-rules.neon', 'rules-usage.php');
+    });
+
+    it('flags reading and writing a real column', function () {
+        expect(implode(' ', $this->messages[10]))->toContain('Use the alias "ordered_quantity" instead of the real column "UVCCDE"')
+            ->and(implode(' ', $this->messages[11]))->toContain('Use the alias "ordered_quantity" instead of the real column "UVCCDE"');
+    });
+
+    it('accepts the alias, columns without an alias and models without aliases', function () {
+        foreach ([12, 13, 14] as $line) {
+            expect(implode(' ', $this->messages[$line] ?? []))->not->toContain('Use the alias');
+        }
+    });
+
+    it('flags a real column in builder and static queries', function () {
+        expect(implode(' ', $this->messages[16]))->toContain('"ordered_quantity"')->toContain('real column "UVCCDE"')
+            ->and(implode(' ', $this->messages[17]))->toContain('"order_status"')->toContain('real column "STATUS"')
+            ->and(implode(' ', $this->messages[20]))->toContain('"order_status"')->toContain('real column "STATUS"');
+    });
+
+    it('accepts alias scopes, other columns and models without aliases in queries', function () {
+        foreach ([18, 19, 21] as $line) {
+            expect(implode(' ', $this->messages[$line] ?? []))->not->toContain('Use the alias');
+        }
     });
 });

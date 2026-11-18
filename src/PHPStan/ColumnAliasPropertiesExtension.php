@@ -3,7 +3,6 @@
 namespace IDL\DB2Driver\PHPStan;
 
 use IDL\DB2Driver\Eloquent\AliasCase;
-use IDL\DB2Driver\Eloquent\HasColumnAliases;
 use Illuminate\Support\Carbon;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
@@ -40,14 +39,10 @@ final class ColumnAliasPropertiesExtension implements PropertiesClassReflectionE
 
     private function columnFor(ClassReflection $classReflection, string $propertyName): ?string
     {
-        if (! $classReflection->hasTraitUse(HasColumnAliases::class)) {
-            return null;
-        }
-
         $map = [];
 
-        foreach ($this->defaultOf($classReflection, 'columnAliases') as $alias => $column) {
-            $map[AliasCase::normalise((string) $alias, $this->aliasCase)] = (string) $column;
+        foreach (ColumnAliasMap::aliasesOf($classReflection) as $alias => $column) {
+            $map[AliasCase::normalise($alias, $this->aliasCase)] = $column;
         }
 
         return $map[$propertyName] ?? $map[AliasCase::normalise($propertyName, $this->aliasCase)] ?? null;
@@ -55,7 +50,7 @@ final class ColumnAliasPropertiesExtension implements PropertiesClassReflectionE
 
     private function typeFor(ClassReflection $classReflection, string $column): Type
     {
-        $cast = $this->defaultOf($classReflection, 'casts')[$column] ?? null;
+        $cast = ColumnAliasMap::castsOf($classReflection)[$column] ?? null;
 
         return match (is_string($cast) ? strtolower(explode(':', $cast)[0]) : null) {
             'int', 'integer' => new IntegerType,
@@ -66,13 +61,5 @@ final class ColumnAliasPropertiesExtension implements PropertiesClassReflectionE
             'date', 'datetime', 'immutable_date', 'immutable_datetime', 'timestamp' => new ObjectType(Carbon::class),
             default => new MixedType,
         };
-    }
-
-    /** @return array<array-key, mixed> */
-    private function defaultOf(ClassReflection $classReflection, string $property): array
-    {
-        $default = $classReflection->getNativeReflection()->getDefaultProperties()[$property] ?? [];
-
-        return is_array($default) ? $default : [];
     }
 }
