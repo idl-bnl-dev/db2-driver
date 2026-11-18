@@ -173,6 +173,17 @@ Order::whereAlias('ordered_quantity', '>', 0)     // where UVCCDE > 0
 - Aliases are normalised to `alias_case` in `config/db2-driver.php` (`DB2_ALIAS_CASE`: `snake` default, `camel` or `none`), so with `camel` both `orderedQuantity` and `ordered_quantity` resolve.
 - An alias that duplicates another alias, a real column, a cast or an accessor throws `ColumnAliasException` when the model is first created.
 
+#### Static analysis
+
+Installing the package next to `phpstan/extension-installer` registers `extension.neon` automatically (otherwise add it to your `includes`). PHPStan and Larastan then know the aliases as properties, typed from the real column's cast (`mixed` without one), so no `@property` docblocks are needed:
+
+```neon
+parameters:
+    db2AliasCase: camel # only when config/db2-driver.php alias_case is not snake
+```
+
+Aliases are read from the `$columnAliases` and `$casts` property defaults, so a map returned by an overridden `columnAliases()` is not seen.
+
 ### Schema builder
 
 ```php
