@@ -6,6 +6,8 @@ parameters:
     paths:
         - src
     tmpDir: build/phpstan
+    # The package supports all of Laravel 13; some ignores below only apply to older minors.
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         # Laravel passes schema commands/columns around as Fluent and reads attributes through __get.
         -
