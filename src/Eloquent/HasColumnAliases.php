@@ -4,7 +4,6 @@ namespace IDL\DB2Driver\Eloquent;
 
 use IDL\DB2Driver\Exceptions\ColumnAliasException;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 
 /**
  * Readable names for cryptic DB2 columns, opt-in per model.
@@ -160,13 +159,6 @@ trait HasColumnAliases
 
     protected function normaliseColumnAlias(string $alias): string
     {
-        $case = (string) config('db2-driver.alias_case', 'snake');
-
-        return match ($case) {
-            'snake' => Str::snake($alias),
-            'camel' => Str::camel($alias),
-            'none' => $alias,
-            default => throw ColumnAliasException::unknownCase($case),
-        };
+        return AliasCase::normalise($alias, (string) config('db2-driver.alias_case', 'snake'));
     }
 }

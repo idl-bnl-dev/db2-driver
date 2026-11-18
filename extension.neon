@@ -1,0 +1,13 @@
+parameters:
+    db2AliasCase: snake
+
+parametersSchema:
+    db2AliasCase: string()
+
+services:
+    -
+        class: IDL\DB2Driver\PHPStan\ColumnAliasPropertiesExtension
+        arguments:
+            aliasCase: %db2AliasCase%
+        tags:
+            - phpstan.broker.propertiesClassReflectionExtension

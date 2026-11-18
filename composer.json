@@ -68,8 +68,16 @@
                 "IDL\\DB2Driver\\DB2DriverServiceProvider",
                 "IDL\\DB2Driver\\DB2ServiceProvider"
             ]
+        },
+        "phpstan": {
+            "includes": [
+                "extension.neon"
+            ]
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "suggest": {
+        "phpstan/phpstan": "Registers the HasColumnAliases property extension (extension.neon) through phpstan/extension-installer"
+    }
 }
