@@ -29,4 +29,18 @@ return [
 
     'readonly_allow_updates' => env('DB2_READONLY_ALLOW_UPDATES', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Column alias case
+    |--------------------------------------------------------------------------
+    |
+    | Case style of the readable column aliases declared with the
+    | HasColumnAliases trait: 'snake' (ordered_quantity), 'camel'
+    | (orderedQuantity) or 'none'. Aliases and the keys used to read them are
+    | both normalised to it, so either spelling resolves.
+    |
+    */
+
+    'alias_case' => env('DB2_ALIAS_CASE', 'snake'),
+
 ];

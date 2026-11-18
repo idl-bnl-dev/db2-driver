@@ -19,3 +19,7 @@ parameters:
         -
             identifier: deadCode.unreachable
             path: src/Schema/DB2Builder.php
+        # Opt-in trait for consumers' models; nothing in src uses it.
+        -
+            identifier: trait.unused
+            path: src/Eloquent/HasColumnAliases.php

@@ -141,6 +141,38 @@ $open = Order::where('STATUS', 'OPEN')->paginate(25);
 
 Or make it the default by setting `DB_CONNECTION=myDB2Connection` in `.env`.
 
+### Column aliases
+
+Db2 columns are often cryptic (`UVCCDE`). The opt-in `HasColumnAliases` trait gives them readable names without touching the SQL:
+
+```php
+use IDL\DB2Driver\Eloquent\HasColumnAliases;
+
+class Order extends Model
+{
+    use HasColumnAliases;
+
+    /** @var array<string, string> alias => real column */
+    protected array $columnAliases = [
+        'ordered_quantity' => 'UVCCDE',
+        'order_status' => 'STATUS',
+    ];
+}
+
+$order->ordered_quantity;                         // reads UVCCDE (casts and accessors still apply)
+$order->fill(['order_status' => 'OPEN']);         // writes STATUS
+Order::whereAlias('ordered_quantity', '>', 0)     // where UVCCDE > 0
+    ->orderByAlias('order_status')
+    ->selectAliased(['ordered_quantity'])         // select UVCCDE as ordered_quantity
+    ->get();
+```
+
+- Queries always use the real column; `selectAliased()` without arguments selects every declared alias.
+- `toArray()` keeps the real columns. Set `public bool $exposeAliases = true;` to return aliases instead.
+- Override `columnAliases()` to load the map from elsewhere.
+- Aliases are normalised to `alias_case` in `config/db2-driver.php` (`DB2_ALIAS_CASE`: `snake` default, `camel` or `none`), so with `camel` both `orderedQuantity` and `ordered_quantity` resolve.
+- An alias that duplicates another alias, a real column, a cast or an accessor throws `ColumnAliasException` when the model is first created.
+
 ### Schema builder
 
 ```php
