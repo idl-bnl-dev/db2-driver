@@ -15,7 +15,10 @@ final class ColumnAliasMap
             return [];
         }
 
-        return array_map('strval', self::defaultOf($classReflection, 'columnAliases'));
+        return array_map('strval', array_filter(
+            self::defaultOf($classReflection, 'columnAliases'),
+            is_scalar(...)
+        ));
     }
 
     /** @return array<array-key, mixed> */

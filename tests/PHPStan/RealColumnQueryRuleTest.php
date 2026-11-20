@@ -12,14 +12,22 @@ final class RealColumnQueryRuleTest extends AliasRulesTestCase
         return new RealColumnQueryRule($this->createReflectionProvider());
     }
 
-    public function test_it_flags_a_real_column_in_builder_and_static_queries(): void
+    public function test_it_flags_or_variants_arrays_selects_aggregates_and_relations(): void
     {
         $order = 'IDL\DB2Driver\Tests\Support\Models\AliasedOrder';
+        $message = fn (string $alias, string $column) => sprintf('Use the alias "%s" (whereAlias(), orderByAlias(), selectAliased()) instead of the real column "%s" on %s.', $alias, $column, $order);
 
         $this->analyse([__DIR__.'/../Support/PHPStan/rules-usage.php'], [
-            [sprintf('Use the alias "ordered_quantity" (whereAlias(), orderByAlias(), selectAliased()) instead of the real column "UVCCDE" on %s.', $order), 16],
-            [sprintf('Use the alias "order_status" (whereAlias(), orderByAlias(), selectAliased()) instead of the real column "STATUS" on %s.', $order), 17],
-            [sprintf('Use the alias "order_status" (whereAlias(), orderByAlias(), selectAliased()) instead of the real column "STATUS" on %s.', $order), 20],
+            [$message('ordered_quantity', 'UVCCDE'), 16],
+            [$message('order_status', 'STATUS'), 17],
+            [$message('order_status', 'STATUS'), 20],
+            [$message('order_status', 'STATUS'), 26],
+            [$message('ordered_quantity', 'UVCCDE'), 27],
+            [$message('order_status', 'STATUS'), 28],
+            [$message('ordered_quantity', 'UVCCDE'), 29],
+            [$message('order_status', 'STATUS'), 30],
+            [$message('ordered_quantity', 'UVCCDE'), 31],
+            [$message('order_status', 'STATUS'), 32],
         ]);
     }
 }

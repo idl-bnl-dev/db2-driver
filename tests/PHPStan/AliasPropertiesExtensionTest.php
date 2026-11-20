@@ -24,19 +24,20 @@ final class AliasPropertiesExtensionTest extends RuleTestCase
         require_once __DIR__.'/../Support/PHPStan/typed-model.php';
 
         $this->analyse([__DIR__.'/../Support/PHPStan/typed-model.php'], [
-            ['float', 24],
+            ['float|null', 24],
             ['mixed', 25],
-            ['float', 26],
-            ['int', 27],
-            ['string', 28],
-            ['bool', 29],
-            ['array', 30],
-            ['Illuminate\Support\Carbon', 31],
+            ['float|null', 26],
+            ['int|null', 27],
+            ['string|null', 28],
+            ['bool|null', 29],
+            ['array|null', 30],
+            ['Illuminate\Support\Carbon|null', 31],
             ['mixed', 32],
             ['mixed', 33],
-            ['float', 34],
-            ['float', 35],
+            ['float|null', 34],
+            ['float|null', 35],
             ['*ERROR*', 36],
+            ['Carbon\CarbonImmutable|null', 37],
         ]);
     }
 }
