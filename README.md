@@ -159,7 +159,7 @@ class Order extends Model
     ];
 }
 
-$order->ordered_quantity;                         // reads UVCCDE (casts and accessors still apply)
+$order->ordered_quantity;                         // reads UVCCDE (casts and accessors apply, also to rows from selectAliased())
 $order->fill(['order_status' => 'OPEN']);         // writes STATUS
 Order::whereAlias('ordered_quantity', '>', 0)     // where UVCCDE > 0
     ->orderByAlias('order_status')
@@ -171,18 +171,23 @@ Order::whereAlias('ordered_quantity', '>', 0)     // where UVCCDE > 0
 - `toArray()` keeps the real columns. Set `public bool $exposeAliases = true;` to return aliases instead.
 - Override `columnAliases()` to load the map from elsewhere.
 - Aliases are normalised to `alias_case` in `config/db2-driver.php` (`DB2_ALIAS_CASE`: `snake` default, `camel` or `none`), so with `camel` both `orderedQuantity` and `ordered_quantity` resolve.
-- An alias that duplicates another alias, a real column, a cast or an accessor throws `ColumnAliasException` when the model is first created.
+- An alias that duplicates another alias, a declared real column (a value in the alias map), a cast or an accessor throws `ColumnAliasException` when the model is first created. The normalised map and the `alias_case` are read once per class; call `Model::flushColumnAliasCache()` after changing the config at runtime.
+- `selectAliased()` emits the alias unquoted, so Db2 may return it upper-cased; the trait also finds `ORDERED_QUANTITY` for `ordered_quantity`. The alias must be a plain identifier, otherwise `ColumnAliasException` is thrown.
+- `toArray()` with `$exposeAliases` uses the alias as declared (not normalised to `alias_case`); when two aliases point to the same column, the last one wins.
+- `whereAlias()`, `orderByAlias()` and `selectAliased()` throw `ColumnAliasException` for a name that is no alias (a real column included). Use plain `where()` for real columns.
+- Only attribute access, `fill()` and the scopes accept aliases. `isDirty()`, `getOriginal()`, `wasChanged()`, `unset()` and `firstOrCreate(['alias' => …])` need the real column, and `$fillable` must list real columns.
+- `select *` stays the default; `selectAliased()` does not change that.
 
 #### Static analysis
 
-Installing the package next to `phpstan/extension-installer` registers `extension.neon` automatically (otherwise add it to your `includes`). PHPStan and Larastan then know the aliases as properties, typed from the real column's cast (`mixed` without one), so no `@property` docblocks are needed:
+Installing the package next to `phpstan/extension-installer` registers `extension.neon` automatically (otherwise add it to your `includes`). PHPStan and Larastan then know the aliases as properties, typed from the real column's cast, nullable because a column can be NULL (`mixed` without a cast), so no `@property` docblocks are needed:
 
 ```neon
 parameters:
     db2AliasCase: camel # only when config/db2-driver.php alias_case is not snake
 ```
 
-Aliases are read from the `$columnAliases` and `$casts` property defaults, so a map returned by an overridden `columnAliases()` is not seen.
+Aliases are read from the `$columnAliases` and `$casts` property defaults, so a map returned by an overridden `columnAliases()` or a `casts()` method is not seen, by the extension nor by the rules below.
 
 ##### Forcing aliases (optional)
 
@@ -196,7 +201,7 @@ includes:
 - `db2.realColumnProperty`: reading or writing a real column (`$order->UVCCDE`) on a `HasColumnAliases` model.
 - `db2.realColumnQuery`: a literal real column in `where`, `orWhere`, `whereIn`, `whereNotIn`, `whereNull`, `whereNotNull`, `whereBetween`, `orderBy`, `orderByDesc`, `groupBy`, `value` or `pluck` on an Eloquent builder or the model's static methods. Use `whereAlias()`, `orderByAlias()` or `selectAliased()`.
 
-Only columns that have an alias are reported. Code that must use real columns, such as join scopes inside the model, can be excluded with `ignoreErrors` on those identifiers.
+Only columns that have an alias are reported. Also checked: the `or` and `not` variants, `whereLike`, `select()`/`addSelect()`, `sum`/`avg`/`min`/`max`/`count`, array arguments (`where(['UVCCDE' => 1])`) and queries through a relation. Not covered: `?->` property access, `whereColumn`, joins and raw expressions. Code that must use real columns, such as join scopes inside the model, can be excluded with `ignoreErrors` on those identifiers.
 
 ### Schema builder
 

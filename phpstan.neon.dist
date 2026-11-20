@@ -6,19 +6,21 @@ parameters:
     paths:
         - src
     tmpDir: build/phpstan
-    # The package supports all of Laravel 13; some ignores below only apply to older minors.
-    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         # Laravel passes schema commands/columns around as Fluent and reads attributes through __get.
+        # reportUnmatched: false because the package supports all of Laravel 13 and these only apply to some minors.
         -
+            reportUnmatched: false
             identifier: property.notFound
             message: '#^Access to an undefined property Illuminate\\Support\\Fluent::\$\w+\.$#'
             path: src/Schema
         # Laravel documents Builder::$resolver as a non-nullable Closure, but it is null until a resolver is set.
         -
+            reportUnmatched: false
             identifier: isset.property
             path: src/Schema/DB2Builder.php
         -
+            reportUnmatched: false
             identifier: deadCode.unreachable
             path: src/Schema/DB2Builder.php
         # Opt-in trait for consumers' models; nothing in src uses it.
