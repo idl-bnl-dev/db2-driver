@@ -16,8 +16,11 @@ use Illuminate\Database\Eloquent\Builder;
  */
 trait HasColumnAliases
 {
-    /** @var array<string, array<string, string>> normalised alias => real column, per class and case style */
+    /** @var array<class-string, array<string, string>> normalised alias => real column, per class */
     protected static array $resolvedColumnAliases = [];
+
+    /** @var array<class-string, string> alias_case read once per class; flushColumnAliasCache() re-reads it */
+    protected static array $columnAliasStyles = [];
 
     public function initializeHasColumnAliases(): void
     {
@@ -27,6 +30,7 @@ trait HasColumnAliases
     public static function flushColumnAliasCache(): void
     {
         static::$resolvedColumnAliases = [];
+        static::$columnAliasStyles = [];
     }
 
     /**
@@ -36,7 +40,8 @@ trait HasColumnAliases
      */
     public function columnAliases(): array
     {
-        return $this->columnAliases ?? [];
+        // property_exists: reading an undeclared property would go through Model::__isset and recurse into getAttribute().
+        return property_exists($this, 'columnAliases') ? $this->columnAliases : [];
     }
 
     /** The real column behind an alias, or the key itself when it is no alias. */
@@ -47,13 +52,29 @@ trait HasColumnAliases
         return $map[$key] ?? $map[$this->normaliseColumnAlias($key)] ?? $key;
     }
 
+    /** The real column behind an alias; unlike resolveColumnAlias(), an unknown alias is an error. */
+    public function requireColumnAlias(string $alias): string
+    {
+        $map = $this->columnAliasMap();
+
+        return $map[$alias] ?? $map[$this->normaliseColumnAlias($alias)]
+            ?? throw ColumnAliasException::unknownAlias(static::class, $alias);
+    }
+
     public function getAttribute($key)
     {
         if (is_string($key)) {
             $real = $this->resolveColumnAlias($key);
 
-            // A row selected AS the alias (selectAliased) stores the value under the alias itself.
-            $key = $real !== $key && array_key_exists($key, $this->attributes) ? $key : $real;
+            if ($real !== $key) {
+                $selected = $this->selectedAliasKey($key, $real);
+
+                // A row selected AS the alias (selectAliased) holds the raw value under the alias itself;
+                // cast and accessor of the real column still apply to it.
+                return $selected !== null
+                    ? $this->transformModelValue($real, $this->attributes[$selected])
+                    : parent::getAttribute($real);
+            }
         }
 
         return parent::getAttribute($key);
@@ -61,7 +82,22 @@ trait HasColumnAliases
 
     public function setAttribute($key, $value)
     {
-        return parent::setAttribute(is_string($key) ? $this->resolveColumnAlias($key) : $key, $value);
+        if (is_string($key)) {
+            $real = $this->resolveColumnAlias($key);
+
+            if ($real !== $key) {
+                // Drop a value selected under the alias, or the write would be shadowed on the next read.
+                $selected = $this->selectedAliasKey($key, $real);
+
+                if ($selected !== null) {
+                    unset($this->attributes[$selected]);
+                }
+
+                $key = $real;
+            }
+        }
+
+        return parent::setAttribute($key, $value);
     }
 
     public function fill(array $attributes)
@@ -79,7 +115,7 @@ trait HasColumnAliases
     {
         $attributes = parent::attributesToArray();
 
-        if (! ($this->exposeAliases ?? false)) {
+        if (! (property_exists($this, 'exposeAliases') && $this->exposeAliases)) {
             return $attributes;
         }
 
@@ -96,13 +132,13 @@ trait HasColumnAliases
     /** @param Builder<static> $query */
     public function scopeWhereAlias(Builder $query, string $alias, mixed ...$arguments): void
     {
-        $query->where($this->resolveColumnAlias($alias), ...$arguments);
+        $query->where($this->requireColumnAlias($alias), ...$arguments);
     }
 
     /** @param Builder<static> $query */
     public function scopeOrderByAlias(Builder $query, string $alias, string $direction = 'asc'): void
     {
-        $query->orderBy($this->resolveColumnAlias($alias), $direction);
+        $query->orderBy($this->requireColumnAlias($alias), $direction);
     }
 
     /**
@@ -117,17 +153,42 @@ trait HasColumnAliases
         $aliases = $aliases === [] ? array_keys($declared) : $aliases;
 
         foreach ($aliases as $alias) {
-            $query->addSelect($this->resolveColumnAlias($alias).' as '.$alias);
+            // The alias is emitted unquoted, so it must be a plain identifier.
+            if (! is_string($alias) || ! preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $alias)) {
+                throw ColumnAliasException::invalidSelectAlias((string) (is_scalar($alias) ? $alias : gettype($alias)));
+            }
+
+            $query->addSelect($this->requireColumnAlias($alias).' as '.$alias);
         }
+    }
+
+    /**
+     * The attribute key a selectAliased() row stores an alias under: as written, or case-folded
+     * because Db2 upper-cases unquoted labels. Null when the row has the real column or no such label.
+     */
+    private function selectedAliasKey(string $alias, string $real): ?string
+    {
+        if (array_key_exists($alias, $this->attributes)) {
+            return $alias;
+        }
+
+        if (array_key_exists($real, $this->attributes)) {
+            return null;
+        }
+
+        foreach ([strtoupper($alias), strtolower($alias)] as $folded) {
+            if ($folded !== $real && array_key_exists($folded, $this->attributes)) {
+                return $folded;
+            }
+        }
+
+        return null;
     }
 
     /** @return array<string, string> */
     protected function columnAliasMap(): array
     {
-        $style = (string) config('db2-driver.alias_case', 'snake');
-        $cacheKey = static::class.'|'.$style;
-
-        return static::$resolvedColumnAliases[$cacheKey] ??= $this->buildColumnAliasMap();
+        return static::$resolvedColumnAliases[static::class] ??= $this->buildColumnAliasMap();
     }
 
     /** @return array<string, string> */
@@ -159,6 +220,8 @@ trait HasColumnAliases
 
     protected function normaliseColumnAlias(string $alias): string
     {
-        return AliasCase::normalise($alias, (string) config('db2-driver.alias_case', 'snake'));
+        $style = static::$columnAliasStyles[static::class] ??= (string) config('db2-driver.alias_case', 'snake');
+
+        return AliasCase::normalise($alias, $style);
     }
 }

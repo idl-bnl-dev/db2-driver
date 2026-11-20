@@ -33,14 +33,14 @@ describe('property extension', function () {
     it('types aliases from the cast of the real column', function () {
         $messages = analyseAliasFixture('phpstan-snake.neon');
 
-        expect($messages[24])->toBe(['Dumped type: float'])
+        expect($messages[24])->toBe(['Dumped type: float|null'])
             ->and($messages[25])->toBe(['Dumped type: mixed'])
-            ->and($messages[26])->toBe(['Dumped type: float'])
-            ->and($messages[27])->toBe(['Dumped type: int'])
-            ->and($messages[28])->toBe(['Dumped type: string'])
-            ->and($messages[29])->toBe(['Dumped type: bool'])
-            ->and($messages[30])->toBe(['Dumped type: array'])
-            ->and($messages[31])->toBe(['Dumped type: Illuminate\Support\Carbon'])
+            ->and($messages[26])->toBe(['Dumped type: float|null'])
+            ->and($messages[27])->toBe(['Dumped type: int|null'])
+            ->and($messages[28])->toBe(['Dumped type: string|null'])
+            ->and($messages[29])->toBe(['Dumped type: bool|null'])
+            ->and($messages[30])->toBe(['Dumped type: array|null'])
+            ->and($messages[31])->toBe(['Dumped type: Illuminate\Support\Carbon|null'])
             ->and($messages[32])->toBe(['Dumped type: mixed'])
             ->and($messages[33])->toBe(['Dumped type: mixed']);
     });
@@ -61,7 +61,7 @@ describe('property extension', function () {
     it('follows the configured case style', function () {
         $messages = analyseAliasFixture('phpstan-none.neon');
 
-        expect($messages[24])->toBe(['Dumped type: float'])
+        expect($messages[24])->toBe(['Dumped type: float|null'])
             ->and(implode(' ', $messages[35]))->toContain('undefined property')->toContain('$orderedQuantity');
     });
 });

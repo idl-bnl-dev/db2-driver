@@ -4,6 +4,7 @@ namespace IDL\DB2Driver\PHPStan\Rules;
 
 use IDL\DB2Driver\PHPStan\ColumnAliasMap;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use PhpParser\Node;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\MethodCall;
@@ -26,10 +27,18 @@ use PHPStan\Type\Type;
  */
 final class RealColumnQueryRule implements Rule
 {
+    /** Methods whose first argument is a column, or an array keyed by column. */
     private const METHODS = [
-        'where', 'orwhere', 'wherein', 'wherenotin', 'wherenull', 'wherenotnull', 'wherebetween',
+        'where', 'orwhere', 'wherenot', 'orwherenot', 'wherein', 'orwherein', 'wherenotin', 'orwherenotin',
+        'wherenull', 'orwherenull', 'wherenotnull', 'orwherenotnull',
+        'wherebetween', 'orwherebetween', 'wherenotbetween', 'orwherenotbetween',
+        'wherelike', 'orwherelike', 'wherenotlike', 'orwherenotlike',
         'orderby', 'orderbydesc', 'groupby', 'value', 'pluck',
+        'sum', 'avg', 'min', 'max', 'count',
     ];
+
+    /** Methods that take columns as arguments or in arrays: every argument is checked. */
+    private const SELECTS = ['select', 'addselect'];
 
     public function __construct(private ReflectionProvider $reflectionProvider) {}
 
@@ -42,8 +51,14 @@ final class RealColumnQueryRule implements Rule
     {
         if (! ($node instanceof MethodCall || $node instanceof StaticCall)
             || ! $node->name instanceof Identifier
-            || ! in_array(strtolower($node->name->name), self::METHODS, true)
             || ! isset($node->getArgs()[0])) {
+            return [];
+        }
+
+        $method = strtolower($node->name->name);
+        $isSelect = in_array($method, self::SELECTS, true);
+
+        if (! $isSelect && ! in_array($method, self::METHODS, true)) {
             return [];
         }
 
@@ -52,12 +67,12 @@ final class RealColumnQueryRule implements Rule
         foreach ($this->modelsOf($node, $scope) as $model) {
             $aliases = array_flip(ColumnAliasMap::aliasesOf($model));
 
-            foreach ($scope->getType($node->getArgs()[0]->value)->getConstantStrings() as $column) {
-                if (isset($aliases[$column->getValue()])) {
+            foreach ($this->columnsOf($node, $scope, $isSelect) as $column) {
+                if (isset($aliases[$column])) {
                     $errors[] = RuleErrorBuilder::message(sprintf(
                         'Use the alias "%s" (whereAlias(), orderByAlias(), selectAliased()) instead of the real column "%s" on %s.',
-                        $aliases[$column->getValue()],
-                        $column->getValue(),
+                        $aliases[$column],
+                        $column,
                         $model->getDisplayName()
                     ))->identifier('db2.realColumnQuery')->build();
                 }
@@ -65,6 +80,35 @@ final class RealColumnQueryRule implements Rule
         }
 
         return $errors;
+    }
+
+    /**
+     * Literal column names in the call: the first argument (all for select), as a string or, for
+     * an array, its keys (where) or values (select).
+     *
+     * @return list<string>
+     */
+    private function columnsOf(MethodCall|StaticCall $node, Scope $scope, bool $isSelect): array
+    {
+        $columns = [];
+
+        foreach ($isSelect ? $node->getArgs() : [$node->getArgs()[0]] as $arg) {
+            $type = $scope->getType($arg->value);
+
+            foreach ($type->getConstantStrings() as $string) {
+                $columns[] = $string->getValue();
+            }
+
+            foreach ($type->getConstantArrays() as $array) {
+                foreach ($isSelect ? $array->getValueTypes() : $array->getKeyTypes() as $part) {
+                    foreach ($part->getConstantStrings() as $string) {
+                        $columns[] = $string->getValue();
+                    }
+                }
+            }
+        }
+
+        return $columns;
     }
 
     /** @return list<ClassReflection> */
@@ -82,11 +126,16 @@ final class RealColumnQueryRule implements Rule
 
         $type = $scope->getType($node->var);
 
-        if (! (new ObjectType(Builder::class))->isSuperTypeOf($type)->yes()) {
-            return [];
+        if ((new ObjectType(Builder::class))->isSuperTypeOf($type)->yes()) {
+            return $this->classesOf($type->getTemplateType(Builder::class, 'TModel'));
         }
 
-        return $this->classesOf($type->getTemplateType(Builder::class, 'TModel'));
+        // A relation forwards to the query builder of its related model.
+        if ((new ObjectType(Relation::class))->isSuperTypeOf($type)->yes()) {
+            return $this->classesOf($type->getTemplateType(Relation::class, 'TRelatedModel'));
+        }
+
+        return [];
     }
 
     /** @return list<ClassReflection> */

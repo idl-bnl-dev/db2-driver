@@ -65,7 +65,55 @@ describe('attributes', function () {
         $order = new AliasedOrder;
         $order->setRawAttributes(['ordered_quantity' => '7']);
 
-        expect($order->ordered_quantity)->toBe('7');
+        expect($order->ordered_quantity)->toBe(7.0);
+    });
+
+    it('finds a selected alias that Db2 returned upper-cased', function () {
+        $order = new AliasedOrder;
+        $order->setRawAttributes(['ORDERED_QUANTITY' => '7']);
+
+        expect($order->ordered_quantity)->toBe(7.0);
+    });
+
+    it('prefers the real column over a case-folded label', function () {
+        $order = new AliasedOrder;
+        $order->setRawAttributes(['UVCCDE' => '5', 'ORDERED_QUANTITY' => '7']);
+
+        expect($order->ordered_quantity)->toBe(5.0);
+    });
+
+    it('reads the new value after writing to an alias that was selected under its own name', function () {
+        $order = new AliasedOrder;
+        $order->setRawAttributes(['ordered_quantity' => '7']);
+        $order->ordered_quantity = 10;
+
+        expect($order->ordered_quantity)->toBe(10.0)
+            ->and($order->getAttributes())->toBe(['UVCCDE' => 10]);
+    });
+
+    it('does not recurse on a model that declares no $columnAliases', function () {
+        $model = new class extends Model
+        {
+            use HasColumnAliases;
+        };
+
+        expect($model->columnAliases())->toBe([])
+            ->and($model->getAttribute('anything'))->toBeNull();
+    });
+
+    it('takes the aliases from an overridden columnAliases()', function () {
+        $model = new class extends Model
+        {
+            use HasColumnAliases;
+
+            public function columnAliases(): array
+            {
+                return ['dynamic_alias' => 'DYN'];
+            }
+        };
+        $model->setRawAttributes(['DYN' => 'x']);
+
+        expect($model->dynamic_alias)->toBe('x');
     });
 
     it('passes non-string keys through', function () {
@@ -89,6 +137,16 @@ describe('toArray', function () {
         $order->setRawAttributes(['OTHER' => 'a', 'UVCCDE' => '5']);
 
         expect($order->toArray())->toBe(['OTHER' => 'a', 'ordered_quantity' => 5.0]);
+    });
+
+    it('exposes the alias as declared, not in the configured case style', function () {
+        config()->set('db2-driver.alias_case', 'camel');
+
+        $order = new AliasedOrder;
+        $order->exposeAliases = true;
+        $order->setRawAttributes(['UVCCDE' => '5']);
+
+        expect($order->toArray())->toBe(['ordered_quantity' => 5.0]);
     });
 });
 
@@ -121,6 +179,15 @@ describe('scopes', function () {
             ->toContain('STATUS as order_status')
             ->not->toContain('UVCCDE');
     });
+
+    it('refuses an unknown alias in every scope', function (string $scope) {
+        AliasedOrder::{$scope}($scope === 'selectAliased' ? ['UVCCDE'] : 'UVCCDE');
+    })->with(['whereAlias', 'orderByAlias', 'selectAliased'])
+        ->throws(ColumnAliasException::class, 'Unknown column alias [UVCCDE]');
+
+    it('refuses an alias that is not a plain identifier', function () {
+        AliasedOrder::selectAliased(['x, (select 1)']);
+    })->throws(ColumnAliasException::class, 'Cannot select [x, (select 1)] as an alias');
 });
 
 describe('collisions', function () {

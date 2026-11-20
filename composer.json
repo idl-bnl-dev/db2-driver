@@ -78,6 +78,6 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "suggest": {
-        "phpstan/phpstan": "Registers the HasColumnAliases property extension (extension.neon) through phpstan/extension-installer"
+        "phpstan/extension-installer": "Registers the HasColumnAliases property extension (extension.neon) for PHPStan automatically"
     }
 }

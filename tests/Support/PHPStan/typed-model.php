@@ -10,10 +10,10 @@ class Casted extends Model
 {
     use HasColumnAliases;
 
-    protected $casts = ['A' => 'int', 'B' => 'decimal:2', 'C' => 'boolean', 'D' => 'json', 'E' => 'datetime', 'F' => 'custom'];
+    protected $casts = ['A' => 'int', 'B' => 'decimal:2', 'C' => 'boolean', 'D' => 'json', 'E' => 'datetime', 'F' => 'custom', 'H' => 'immutable_datetime:Y-m-d'];
 
     protected array $columnAliases = [
-        'a_int' => 'A', 'b_decimal' => 'B', 'c_bool' => 'C', 'd_json' => 'D', 'e_date' => 'E', 'f_other' => 'F', 'g_plain' => 'G',
+        'a_int' => 'A', 'b_decimal' => 'B', 'c_bool' => 'C', 'd_json' => 'D', 'e_date' => 'E', 'f_other' => 'F', 'g_plain' => 'G', 'h_immutable' => 'H',
     ];
 }
 
@@ -34,4 +34,5 @@ function usage(AliasedOrder $order, ChildOrder $child, Casted $casted): void
     $order->ordered_quantity = 3.5;
     $order->orderedQuantity;
     $order->not_an_alias;
+    \PHPStan\dumpType($casted->h_immutable);
 }

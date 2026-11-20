@@ -20,3 +20,21 @@ function rules(AliasedOrder $order, User $user): void
     AliasedOrder::where('STATUS', 'x');
     User::query()->where('UVCCDE', 1);
 }
+
+function more(Customer $customer): void
+{
+    AliasedOrder::query()->orWhereIn('STATUS', ['x']);
+    AliasedOrder::query()->whereNotBetween('UVCCDE', [1, 2]);
+    AliasedOrder::query()->where(['STATUS' => 'x', 'OTHER' => 1]);
+    AliasedOrder::query()->select('OTHER', 'UVCCDE');
+    AliasedOrder::query()->addSelect(['STATUS']);
+    AliasedOrder::query()->max('UVCCDE');
+    $customer->orders()->where('STATUS', 'x');
+    AliasedOrder::query()->whereAlias('order_status', 'x');
+}
+
+function unresolvable(string $class): void
+{
+    $class::where('STATUS', 'x');
+    \IDL\DB2Driver\Tests\Support\PHPStan\DoesNotExist::where('STATUS', 'x');
+}
