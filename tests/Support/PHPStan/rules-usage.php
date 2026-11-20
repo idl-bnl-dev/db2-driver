@@ -32,3 +32,9 @@ function more(Customer $customer): void
     $customer->orders()->where('STATUS', 'x');
     AliasedOrder::query()->whereAlias('order_status', 'x');
 }
+
+function unresolvable(string $class): void
+{
+    $class::where('STATUS', 'x');
+    \IDL\DB2Driver\Tests\Support\PHPStan\DoesNotExist::where('STATUS', 'x');
+}
