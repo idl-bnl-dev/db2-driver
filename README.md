@@ -184,6 +184,20 @@ parameters:
 
 Aliases are read from the `$columnAliases` and `$casts` property defaults, so a map returned by an overridden `columnAliases()` is not seen.
 
+##### Forcing aliases (optional)
+
+To make aliases mandatory, add `rules.neon` to your PHPStan config. It is not registered automatically:
+
+```neon
+includes:
+    - vendor/idl-bnl-dev/db2-driver/rules.neon
+```
+
+- `db2.realColumnProperty`: reading or writing a real column (`$order->UVCCDE`) on a `HasColumnAliases` model.
+- `db2.realColumnQuery`: a literal real column in `where`, `orWhere`, `whereIn`, `whereNotIn`, `whereNull`, `whereNotNull`, `whereBetween`, `orderBy`, `orderByDesc`, `groupBy`, `value` or `pluck` on an Eloquent builder or the model's static methods. Use `whereAlias()`, `orderByAlias()` or `selectAliased()`.
+
+Only columns that have an alias are reported. Code that must use real columns, such as join scopes inside the model, can be excluded with `ignoreErrors` on those identifiers.
+
 ### Schema builder
 
 ```php

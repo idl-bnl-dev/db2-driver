@@ -1,0 +1,4 @@
+# Optional: include this file to force the use of column aliases on HasColumnAliases models.
+rules:
+    - IDL\DB2Driver\PHPStan\Rules\RealColumnPropertyRule
+    - IDL\DB2Driver\PHPStan\Rules\RealColumnQueryRule

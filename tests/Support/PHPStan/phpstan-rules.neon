@@ -1,0 +1,7 @@
+includes:
+    - phpstan-snake.neon
+    - ../../../rules.neon
+
+parameters:
+    paths:
+        - rules-usage.php
